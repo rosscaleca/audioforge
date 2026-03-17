@@ -59,11 +59,24 @@ jobs:
       - name: Build
         run: ${{ matrix.build_script }}
 
+      - name: Create release archive (macOS)
+        if: runner.os == 'macOS'
+        run: cd dist/macos && zip -r --symlinks ../../AudioForge-macOS.zip AudioForge.app
+
+      - name: Create release archive (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: cd dist/windows && zip -r ../../AudioForge-Windows.zip .
+
+      - name: Create release archive (Linux)
+        if: runner.os == 'Linux'
+        run: cd dist/linux && zip -r ../../AudioForge-Linux.zip .
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: ${{ matrix.dist_path }}
+          path: AudioForge-*.zip
           retention-days: 30
 
   release:
@@ -78,13 +91,8 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create archives
-        run: |
-          cd artifacts
-          for dir in */; do
-            name="${dir%/}"
-            zip -r "../${name}.zip" "$dir"
-          done
+      - name: Collect zips
+        run: find artifacts -name '*.zip' -exec mv {} . \;
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
