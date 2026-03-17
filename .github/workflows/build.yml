@@ -1,0 +1,87 @@
+name: Build AudioForge
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Run unit tests
+        run: python -m pytest tests/ -v -m "not integration"
+
+  build:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: AudioForge-macOS
+            build_script: bash build/build_macos.sh
+            dist_path: dist/macos
+          - os: windows-latest
+            artifact: AudioForge-Windows
+            build_script: build\build_windows.bat
+            dist_path: dist/windows
+          - os: ubuntu-latest
+            artifact: AudioForge-Linux
+            build_script: bash build/build_linux.sh
+            dist_path: dist/linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Build
+        run: ${{ matrix.build_script }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.dist_path }}
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create archives
+        run: |
+          cd artifacts
+          for dir in */; do
+            name="${dir%/}"
+            zip -r "../${name}.zip" "$dir"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.zip"
+          generate_release_notes: true
