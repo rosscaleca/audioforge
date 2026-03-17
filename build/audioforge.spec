@@ -9,12 +9,13 @@ import customtkinter
 
 block_cipher = None
 
-# CustomTkinter assets must be bundled
+# Resolve all paths relative to the project root (one level up from this spec file)
+ROOT = Path(SPECPATH).parent
 ctk_path = os.path.dirname(customtkinter.__file__)
 
 a = Analysis(
-    [str(Path("src/audioforge/__main__.py"))],
-    pathex=[str(Path("src"))],
+    [str(ROOT / "src" / "audioforge" / "__main__.py")],
+    pathex=[str(ROOT / "src")],
     binaries=[],
     datas=[
         (ctk_path, "customtkinter"),
@@ -62,8 +63,8 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
-    icon="assets/icon.icns" if sys.platform == "darwin" else (
-        "assets/icon.ico" if sys.platform == "win32" else None
+    icon=str(ROOT / "assets" / "icon.icns") if sys.platform == "darwin" else (
+        str(ROOT / "assets" / "icon.ico") if sys.platform == "win32" else None
     ),
 )
 
@@ -83,7 +84,7 @@ if sys.platform == "darwin":
     app = BUNDLE(
         coll,
         name="AudioForge.app",
-        icon="assets/icon.icns",
+        icon=str(ROOT / "assets" / "icon.icns"),
         bundle_identifier="com.audioforge.app",
         info_plist={
             "CFBundleName": "AudioForge",
