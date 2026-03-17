@@ -16,6 +16,18 @@ A cross-platform desktop application for merging multiple audio files into a sin
 
 > **Requires [FFmpeg](https://ffmpeg.org/)** installed on your system. See [Installing FFmpeg](#installing-ffmpeg) below.
 
+### macOS: First Launch
+
+macOS Gatekeeper may block the app since it's not notarized. To open it:
+
+1. **Right-click** (or Control-click) on `AudioForge.app` and select **Open**
+2. Click **Open** in the dialog that appears
+
+Or remove the quarantine attribute via Terminal:
+```bash
+xattr -cr ~/Downloads/AudioForge.app
+```
+
 ## Features
 
 - **Multi-format input** — MP3, M4A, AAC, FLAC, WAV, OGG, Opus, WMA, AIFF
