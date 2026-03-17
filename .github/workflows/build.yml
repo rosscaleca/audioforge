@@ -65,8 +65,8 @@ jobs:
 
       - name: Create release archive (Windows)
         if: runner.os == 'Windows'
-        shell: bash
-        run: cd dist/windows && zip -r ../../AudioForge-Windows.zip .
+        shell: pwsh
+        run: Compress-Archive -Path dist/windows/* -DestinationPath AudioForge-Windows.zip
 
       - name: Create release archive (Linux)
         if: runner.os == 'Linux'
