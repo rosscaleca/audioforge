@@ -27,21 +27,9 @@ def get_default_fonts() -> tuple[str, str]:
 def get_dpi_scaling() -> float | None:
     """Return a DPI scaling factor, or None to use the toolkit default.
 
-    On macOS, Tk handles Retina scaling automatically with CustomTkinter.
-    On Windows, we read the system DPI.
-    On Linux, we defer to the toolkit.
+    CustomTkinter handles DPI scaling automatically on all platforms,
+    so we return None to avoid double-scaling.
     """
-    platform = get_platform()
-    if platform == "windows":
-        try:
-            import ctypes
-
-            hdc = ctypes.windll.user32.GetDC(0)
-            dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)  # LOGPIXELSX
-            ctypes.windll.user32.ReleaseDC(0, hdc)
-            return dpi / 96.0
-        except Exception:
-            return None
     return None
 
 
